@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -30,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,19 +42,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import edu.nd.pmcburne.hwapp.one.ui.GameViewModel
 import edu.nd.pmcburne.hwapp.one.ui.theme.HWStarterRepoTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val viewModel: GameViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                viewModel.loadGames()
+            }
             HWStarterRepoTheme {
-                GameDayTopAppBar()
+                GameDayTopAppBar(viewModel)
             }
         }
     }
@@ -68,7 +76,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameDayTopAppBar() {
+fun GameDayTopAppBar(viewModel: GameViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
@@ -86,12 +94,12 @@ fun GameDayTopAppBar() {
             )
         },
     ) { innerPadding ->
-        ScrollContent(innerPadding)
+        ScrollContent(innerPadding, viewModel)
     }
 }
 
 @Composable
-fun ScrollContent(innerPadding: PaddingValues) {
+fun ScrollContent(innerPadding: PaddingValues, viewModel: GameViewModel) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -103,12 +111,9 @@ fun ScrollContent(innerPadding: PaddingValues) {
             BasketballGenderSwitch()
             Spacer(modifier = Modifier.height(16.dp))
         }
-        items(50) { index ->
-            Text(
-                text = "Item ${index + 1}",
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
+        items(viewModel.games) { game ->
+            Text("${game.awayTeam} vs ${game.homeTeam}")
+            Text("debugging placeholder")
         }
     }
 }
